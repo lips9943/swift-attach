@@ -12,7 +12,8 @@ struct ServiceAttachPlugin: CompilerPlugin {
         InstanceMacro.self,
         SharedMacro.self,
         WeakMacro.self,
-        UnregisterMacro.self
+        UnregisterMacro.self,
+        LazyMacro.self
     ]
 }
 
