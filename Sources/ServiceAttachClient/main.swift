@@ -178,11 +178,11 @@ final class TestLazyImpl: TestLazyProtocol {
 final class LazyTests {
     // 기본 lazy 초기화 테스트
     @Lazy
-    var lazyService: TestLazyService
+    var lazyService: TestLazyService!
 
     // 프로토콜 타입 lazy 테스트
     @Lazy(impl: TestLazyImpl.self)
-    var lazyProtocolService: TestLazyProtocol
+    var lazyProtocolService: TestLazyProtocol!
 
     func runAllTests() {
         testBasicLazy()
@@ -195,11 +195,11 @@ final class LazyTests {
         print("Before first access")
 
         // 첫 접근 - 초기화 발생
-        let service1 = lazyService
+        let service1 = lazyService!
         print("After first access - service.name: \(service1.name)")
 
         // 두 번째 접근 - 같은 인스턴스 반환
-        let service2 = lazyService
+        let service2 = lazyService!
 
         print("Are same instance: \(service1 === service2)")
         print("Service1 initCount: \(service1.initCount)")
@@ -211,12 +211,12 @@ final class LazyTests {
         print("Before protocol access")
 
         // 첫 접근 - 초기화 발생
-        let impl1 = lazyProtocolService
+        let impl1 = lazyProtocolService!
         print("After protocol access - protocolName: \(impl1.protocolName)")
 
         // 현재 구현에서는 프로토콜 타입의 경우 weak storage에서
         // 키 매칭 이슈로 인해 인스턴스가 재생성될 수 있습니다.
-        let impl2 = lazyProtocolService
+        let impl2 = lazyProtocolService!
 
         // 프로토콜 타입이므로 클래스 타입으로 캐스팅해서 비교
         let impl1Class = impl1 as? TestLazyImpl
@@ -232,14 +232,14 @@ final class LazyTests {
         weak var weakService: TestLazyService?
 
         autoreleasepool {
-            let tempService = lazyService
+            let tempService = lazyService!
             weakService = tempService
             print("Inside autoreleasepool - service exists: \(tempService.name)")
         }
 
         print("After autoreleasepool - weak reference is nil: \(weakService == nil)")
         // 다시 접근하면 재초기화되어야 함
-        let newService = lazyService
+        let newService = lazyService!
         print("After re-access - service.name: \(newService.name)")
     }
 
