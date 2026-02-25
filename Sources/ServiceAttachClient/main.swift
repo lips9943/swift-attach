@@ -144,8 +144,10 @@ class Test {
 
 // MARK: - @Lazy Macro Tests
 
+// MARK: - @Lazy Macro Tests
+
 // 테스트용 클래스
-class TestLazyService {
+final class TestLazyService {
     var name: String
     var initCount: Int = 0
 
@@ -156,12 +158,12 @@ class TestLazyService {
     }
 }
 
-// 프로토콜 및 구현체
+// 프로토콜은 AnyObject를 상속받아야 weak 참조 가능
 protocol TestLazyProtocol: AnyObject {
     var protocolName: String { get }
 }
 
-class TestLazyImpl: TestLazyProtocol {
+final class TestLazyImpl: TestLazyProtocol {
     var protocolName: String = "TestLazyImpl"
     var initCount: Int = 0
 
@@ -171,48 +173,50 @@ class TestLazyImpl: TestLazyProtocol {
     }
 }
 
-// 테스트 클래스 - 인스턴스 메서드에서만 접근
+// 테스트를 별도 클래스로 캡슐화하여 MainActor 문제 회피
 @Unregister(type: (TestLazyService.self, nil), (TestLazyProtocol.self, nil))
-class LazyTester {
+final class LazyTests {
     // 기본 lazy 초기화 테스트
     @Lazy
-    var lazyService: TestLazyService!
+    var lazyService: TestLazyService
 
     // 프로토콜 타입 lazy 테스트
     @Lazy(impl: TestLazyImpl.self)
-    var lazyProtocolService: TestLazyProtocol!
+    var lazyProtocolService: TestLazyProtocol
 
-    func testBasicLazy() {
+    func runAllTests() {
+        testBasicLazy()
+        testLazyWithProtocol()
+        testLazyMemoryManagement()
+    }
+
+    private func testBasicLazy() {
         print("=== Test: Basic Lazy Initialization ===")
-
-        // 아직 초기화되지 않아야 함
         print("Before first access")
 
         // 첫 접근 - 초기화 발생
-        let service1 = lazyService!
+        let service1 = lazyService
         print("After first access - service.name: \(service1.name)")
 
         // 두 번째 접근 - 같은 인스턴스 반환
-        let service2 = lazyService!
+        let service2 = lazyService
 
         print("Are same instance: \(service1 === service2)")
         print("Service1 initCount: \(service1.initCount)")
         print("Service2 initCount: \(service2.initCount)")
     }
 
-    func testLazyWithProtocol() {
+    private func testLazyWithProtocol() {
         print("\n=== Test: Lazy with Protocol ===")
-
         print("Before protocol access")
 
         // 첫 접근 - 초기화 발생
-        let impl1 = lazyProtocolService!
+        let impl1 = lazyProtocolService
         print("After protocol access - protocolName: \(impl1.protocolName)")
 
         // 현재 구현에서는 프로토콜 타입의 경우 weak storage에서
         // 키 매칭 이슈로 인해 인스턴스가 재생성될 수 있습니다.
-        // 이는 추후 개선이 필요한 부분입니다.
-        let impl2 = lazyProtocolService!
+        let impl2 = lazyProtocolService
 
         // 프로토콜 타입이므로 클래스 타입으로 캐스팅해서 비교
         let impl1Class = impl1 as? TestLazyImpl
@@ -221,23 +225,21 @@ class LazyTester {
         print("Are same instance: \(impl1Class === impl2Class)")
     }
 
-    func testLazyMemoryManagement() {
+    private func testLazyMemoryManagement() {
         print("\n=== Test: Lazy Memory Management ===")
-
-        // weak 참조이므로 참조가 사라지면 메모리 해제되어야 함
         print("Creating weak reference to lazy service")
 
         weak var weakService: TestLazyService?
 
         autoreleasepool {
-            let tempService = lazyService!
+            let tempService = lazyService
             weakService = tempService
             print("Inside autoreleasepool - service exists: \(tempService.name)")
         }
 
         print("After autoreleasepool - weak reference is nil: \(weakService == nil)")
         // 다시 접근하면 재초기화되어야 함
-        let newService = lazyService!
+        let newService = lazyService
         print("After re-access - service.name: \(newService.name)")
     }
 
@@ -247,10 +249,8 @@ class LazyTester {
 }
 
 // 테스트 실행
-let tester = LazyTester()
-tester.testBasicLazy()
-tester.testLazyWithProtocol()
-tester.testLazyMemoryManagement()
+let tests = LazyTests()
+tests.runAllTests()
 
 print("\n=== All tests completed ===")
 
