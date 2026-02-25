@@ -57,7 +57,21 @@ public struct LazyMacro: AccessorMacro {
             .noOptionalSupported
             .create(declaration, context, when: rawType.contains("?"))
 
-        // getter 코드 생성은 다음 단계에서
-        return []
+        // getter 코드 생성
+        return [
+            """
+            get {
+                let ctn = Container.shared
+
+                if let instance = ctn.resolveOptional(\(raw: resolveType)\(raw: protocolType) scope: .weak) {
+                    return instance
+                } else {
+                    let impl = \(raw: impl)
+                    ctn.register(\(raw: protocolType)impl: impl, scope: .weak)
+                    return impl
+                }
+            }
+            """
+        ]
     }
 }
