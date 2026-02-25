@@ -46,7 +46,7 @@ public struct LazyMacro: AccessorMacro {
             let typeName = Helper.removeSelf(type: implArg)
             resolveType = implArg + ","
             impl = "\(typeName)()"
-            protocolType = "protocol: \(type).self,"
+            protocolType = " protocol: \(type).self,"
         } else {
             resolveType = type + ".self, "
             impl = "\(type)()"
@@ -67,7 +67,7 @@ public struct LazyMacro: AccessorMacro {
                     return instance
                 } else {
                     let impl = \(raw: impl)
-                    ctn.register(\(raw: protocolType)impl: impl, scope: .weak)
+                    ctn.register(\(raw: protocolType) impl: impl, scope: .weak)
                     return impl
                 }
             }
