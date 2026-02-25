@@ -49,5 +49,14 @@ let package = Package(
             ]
         ),
 
+        // === 테스트 타겟 추가 ===
+        .testTarget(
+            name: "ServiceAttachMacrosTests",
+            dependencies: [
+                "ServiceAttachMacros",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
+            ]
+        ),
+
     ]
 )

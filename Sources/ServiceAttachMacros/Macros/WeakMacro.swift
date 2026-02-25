@@ -55,9 +55,9 @@ public struct WeakMacro: AccessorMacro {
         // when implementation argument exsists
         if let implArg {
             let typeName = Helper.removeSelf(type: implArg)
-            resolveType = implArg + ","
-            impl = "\(typeName)()"
-            protocolType = "protocol: \(type).self,"
+            resolveType = type + ".self,"
+            impl = "\(type)()"
+            protocolType = "protocol: \(typeName).self,"
         } else {
             resolveType = type + ".self, "
             impl = "\(type)()"
