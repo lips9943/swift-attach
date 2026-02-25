@@ -41,12 +41,12 @@ final class WeakMacroTests: XCTestCase {
             var presenter: Presenter! {
                 get {
                     let ctn = Container.shared
-                    if let instance = ctn.resolveOptional(PresenterProtocol.self, protocol: Presenter.self, scope: .weak) {
+                    if let instance = ctn.resolveOptional(Presenter.self, protocol: PresenterProtocol.self, scope: .weak) {
                         return instance
                     } else {
-                        let impl = PresenterProtocol()
+                        let impl = Presenter()
                         impl.view = self
-                        ctn.register(protocol: Presenter.self, impl: impl, scope: .weak)
+                        ctn.register(protocol: PresenterProtocol.self, impl: impl, scope: .weak)
                         return impl
                     }
                 }
