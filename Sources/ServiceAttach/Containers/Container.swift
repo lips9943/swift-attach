@@ -1,4 +1,23 @@
-//
+/// Swift Macros를 사용한 의존성 주입(Dependency Injection) 라이브러리입니다.
+///
+/// ServiceAttach는 컴파일 타임에 매크로를 확장하여
+/// 타입 안전한 의존성 주입을 제공합니다.
+///
+/// - Important: Swift 6.2+가 필요합니다.
+///
+/// ## Topics
+///
+/// ### Macros
+/// - ``Instance``
+/// - ``Shared``
+/// - ``Weak``
+/// - ``Lazy``
+/// - ``Unregister``
+///
+/// ### Containers
+/// - ``Container``
+/// - ``Scope``
+///
 //  Container.swift
 //  Injective
 //
