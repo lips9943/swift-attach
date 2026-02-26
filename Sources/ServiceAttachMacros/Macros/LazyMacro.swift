@@ -44,7 +44,7 @@ public struct LazyMacro: AccessorMacro {
         // impl 인자가 있는 경우
         if let implArg {
             let typeName = Helper.removeSelf(type: implArg)
-            resolveType = type + ".self,"
+            resolveType = implArg + ","
             impl = "\(typeName)()"
             protocolType = "protocol: \(type).self,"
         } else {

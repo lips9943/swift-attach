@@ -7,13 +7,20 @@
 import Combine
 import Foundation
 
+// Weak 참조를 위한 래퍼 클래스
+private class WeakBox<T: AnyObject> {
+    weak var value: T?
+    init(_ value: T) {
+        self.value = value
+    }
+}
 
 public final class Container: ContainerType {
     private let lock = NSLock()
     private lazy var storage: [String: () -> Any] = [:]
     private lazy var singletonStorage: [String: Any] = [:]
-    private lazy var weakStorage: [String: Any] = [:]
-    
+    private lazy var weakStorage: [String: WeakBox<AnyObject>] = [:]
+
     nonisolated(unsafe) public static let shared = Container()
     
     public init() {}
@@ -119,9 +126,15 @@ extension Container {
             singletonStorage[key] = result
             return result
         case .weak:
-            if let transient = weakStorage[key] as? T { return transient }
-            let result = transient() as? T
-            weakStorage[key] = result
+            // weak 박스에서 값 가져오기
+            if let weakBox = weakStorage[key], let value = weakBox.value as? T {
+                return value
+            }
+            // 없으면 새로 생성하고 weak 박스에 저장
+            guard let result = transient() as? T, let objectResult = result as? AnyObject else {
+                return nil
+            }
+            weakStorage[key] = WeakBox(objectResult)
             return result
         }
     }
@@ -134,7 +147,10 @@ extension Container {
         case .transient:
             break
         case .weak:
-            weakStorage[key] = value()
+            // weak 박스에 래핑하여 저장
+            if let objectValue = value() as? AnyObject {
+                weakStorage[key] = WeakBox(objectValue)
+            }
         }
     }
 }
