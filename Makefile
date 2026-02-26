@@ -1,4 +1,4 @@
-.PHONY: docs help clean
+.PHONY: docs help clean test
 
 help:
 	@echo "사용 가능한 명령어:"
