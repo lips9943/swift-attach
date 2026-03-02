@@ -55,7 +55,6 @@ swift run ServiceAttachClient
 | [시작하기](docs/getting-started.md) | 설치부터 첫 예제까지 |
 | [가이드](docs/guides/) | 개념별 상세 가이드 |
 | [아키텍처](docs/architecture/) | 내부 구현과 기여 방법 |
-| [API 레퍼런스](docs/api/) | 전체 API 문서 (DocC) |
 
 ## 예시
 
