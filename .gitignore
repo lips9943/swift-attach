@@ -9,6 +9,7 @@ DerivedData/
 
 
 docs/plans/*
+docs/api/
 
 CLAUDE.md
 .claude/
