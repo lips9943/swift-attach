@@ -16,12 +16,11 @@ final class LazyMacroTests: XCTestCase {
             var service: MyService {
                 get {
                     let ctn = Container.shared
-
                     if let instance = ctn.resolveOptional(MyService.self,  scope: .weak) {
                         return instance
                     } else {
                         let impl = MyService()
-                        ctn.register( impl: impl, scope: .weak)
+                        ctn.register(impl: impl, scope: .weak)
                         return impl
                     }
                 }
@@ -41,7 +40,6 @@ final class LazyMacroTests: XCTestCase {
             var service: ServiceProtocol {
                 get {
                     let ctn = Container.shared
-
                     if let instance = ctn.resolveOptional(ServiceImpl.self, protocol: ServiceProtocol.self, scope: .weak) {
                         return instance
                     } else {
