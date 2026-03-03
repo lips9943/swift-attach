@@ -1086,42 +1086,91 @@ public extension BaseScopeMacro {
   - WeakMacroTests: 2 tests
   - ServiceAttachMacrosTests: 1 test
 
-### 다음 작업 (남은 Task 12-16)
+### 완료된 작업 (Task 12-16)
 
-- Task 12: 스레드 안전성 테스트 추가 (ConcurrencyTests.swift)
-- Task 13: 전체 테스트 실행 및 검증
-- Task 14: **UnregisterMacro 버그 수정** + **모든 매크로에 await 추가**
-- Task 15: 문서 업데이트
-- Task 16: 최종 검증 및 릴리스 준비
+| Task | 상태 | 설명 | 커밋 |
+|------|------|------|------|
+| Task 12 | ✅ 완료 | 스레드 안전성 테스트 추가 (ConcurrencyTests.swift, 8개 테스트) | 5bd83fc |
+| Task 13 | ✅ 완료 | 전체 테스트 실행 및 검증 (44개 테스트 통과) | - |
+| Task 15 | ✅ 완료 | 문서 업데이트 (macros.md, container.md, README.md) | caa5c05 |
+| Task 16 | ✅ 완료 | 최종 검증 및 마이그레이션 가이드 작성 | 030b65d |
 
-### 중요: Task 14 범위 확장
+### Task 12 상세
 
-**Task 14는 이제 다음을 포함해야 합니다:**
-1. UnregisterMacro 버그 수정 (프로토콜 조합 확장 경고)
-2. **모든 매크로에 await 추가** (actor-isolated call 해결)
-   - InstanceMacro: 생성된 getter에 `await` 추가
-   - SharedMacro: 생성된 getter에 `await` 추가
-   - WeakMacro: 생성된 getter에 `await` 추가
-   - LazyMacro: 생성된 getter와 register 호출에 `await` 추가
-   - UnregisterMacro: 생성된 unregisterObjects()에 `await` 추가
+#### ConcurrencyTests.swift 추가
+8개의 스레드 안전성 테스트 추가:
+- `testConcurrentResolve`: 100개의 동시 resolve 호출
+- `testConcurrentResolveWithSharedScope`: shared 스코프 싱글톤 검증
+- `testConcurrentRegisterAndResolve`: 동시 등록/resolve
+- `testThreadSafeRegister`: 스레드-safe 등록
+- `testThreadSafeResolve`: 스레드-safe resolve 및 싱글톤 검증
+- `testContainerSharedIsSingleton`: Container.shared 싱글톤 검증
+- `testNonisolatedMethodsWorkWithoutAwait`: nonisolated API 검증
+- `testConcurrentWeakScopeResolve`: weak 스코프 동시성 테스트
 
-**변경 예시:**
-```swift
-// Before (actor 변환 전)
-get {
-    let ctn = Container.shared
-    if let instance = ctn.resolveOptional(Service.self, scope: .transient) {
-        return instance
-    }
-    // ...
-}
+### Task 13 상세
 
-// After (actor 변환 후)
-get {
-    let ctn = Container.shared
-    if let instance = await ctn.resolveOptional(Service.self, scope: .transient) {
-        return instance
-    }
-    // ...
-}
-```
+#### 전체 테스트 결과
+- **총 44개 테스트 통과** (이전 36개 → 44개)
+- 모든 테스트 스위트 통과
+- 컴파일러 경고 없음
+- 릴리즈 빌드 성공
+- 예제 실행 정상
+
+### Task 15 상세
+
+#### 문서 업데이트
+- **macros.md**: BaseScopeMacro 프로토콜 설명 추가
+- **container.md**: 스레드 안전성, throwing API, 에러 처리 섹션 추가
+- **README.md**: Swift 6 Conformance 섹션 추가
+
+### Task 16 상세
+
+#### 마이그레이션 가이드 작성
+- 기존 코드 호환성 설명 (완전 호환)
+- 새로운 Throwing API 사용법
+- ContainerError 타입 처리
+- 내부 구현 변경사항
+- 마이그레이션 체크리스트
+
+### 최종 상태 (2026-03-03 완료)
+
+- ✅ ServiceAttach 라이브러리 타겟: 컴파일 성공
+- ✅ ServiceAttachClient 예제: 정상 실행
+- ✅ 전체 테스트: 44개 테스트 모두 통과
+- ✅ 컴파일러 경고: 없음
+- ✅ 문서: 모두 업데이트 완료
+- ✅ 마이그레이션 가이드: 작성 완료
+
+### 리팩토링 성과
+
+1. **매크로 아키텍처 개선**
+   - BaseScopeMacro 프로토콜 도입으로 코드 중복 제거
+   - 일관된 에러 처리 로직
+
+2. **스레드 안전성 강화**
+   - Actor 기반 Container 구현
+   - NSLock 기반 내부 저장소 동기화
+   - 8개의 동시성 테스트로 검증
+
+3. **에러 처리 개선**
+   - 구조화된 ContainerError 타입
+   - Throwing API로 명시적 에러 처리
+   - 9개의 에러 처리 테스트
+
+4. **테스트 커버리지 확대**
+   - 36개 → 44개 테스트 (+8개)
+   - 동시성 테스트 추가
+   - 에러 처리 테스트 추가
+
+5. **문서 개선**
+   - 아키텍처 변경사항 반영
+   - 마이그레이션 가이드 제공
+   - 사용 예시 확대
+
+### 참고: Task 14는 이미 이전에 완료됨
+
+Task 14 (UnregisterMacro 버그 수정 및 actor-isolated call 에러 해결)은 이전 작업에서 완료되었음:
+- Container를 nonisolated 공개 API와 내부 NSLock 동기화로 리팩토링
+- UnregisterMacro 버그 수정 (extension View → extension 타입)
+- 결과: 모든 매크로에서 await 없이 Container 메서드 호출 가능
