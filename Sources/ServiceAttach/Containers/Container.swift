@@ -89,25 +89,64 @@ public actor Container: ContainerType {
 //        guard let value: T = resolveOptional(type, scope: scope) else { fatalError("등록되지 않은 타입: \(T.self)") }
 //        return value
 //    }
-//    
+//
 //    public func resolve<T, P>(_ type: T.Type, protocol: P.Type, scope: Scope = .transient) -> T {
 //        guard let value: T = resolveOptional(type, protocol: `protocol`, scope: scope) else { fatalError("등록되지 않은 타입: \(T.self)") }
 //        return value
 //    }
-    
+
+    /// 지정된 타입과 스코프로 인스턴스를 resolve합니다. (throwing 버전)
+    ///
+    /// - Parameters:
+    ///   - type: resolve할 타입
+    ///   - scope: 인스턴스의 생명주기 (기본값: `.transient`)
+    /// - Returns: resolve된 인스턴스
+    /// - Throws: ContainerError 타입이 등록되지 않은 경우
+    public func resolve<T>(_ type: T.Type, scope: Scope = .transient) throws -> T {
+        let key = makeKey(type, protocols: nil, scope: scope)
+
+        guard let transient = storage[key] else {
+            throw ContainerError.typeNotRegistered(type: String(describing: type), scope: String(describing: scope))
+        }
+
+        guard let result: T = _resolveWithScope(key: key, transient: transient, scope: scope) else {
+            throw ContainerError.typeNotRegistered(type: String(describing: type), scope: String(describing: scope))
+        }
+
+        return result
+    }
+
+    /// 프로토콜 타입으로 인스턴스를 resolve합니다. (throwing 버전)
+    ///
+    /// - Parameters:
+    ///   - type: resolve할 타입
+    ///   - protocol: 프로토콜 타입
+    ///   - scope: 인스턴스의 생명주기 (기본값: `.transient`)
+    /// - Returns: resolve된 인스턴스
+    /// - Throws: ContainerError 타입이 등록되지 않은 경우
+    public func resolve<T, P>(_ type: T.Type, protocol: P.Type, scope: Scope = .transient) throws -> T {
+        let key = makeKey(type, protocols: `protocol`, scope: scope)
+
+        guard let transient = storage[key] else {
+            throw ContainerError.typeNotRegistered(type: String(describing: type), scope: String(describing: scope))
+        }
+
+        guard let result: T = _resolveWithScope(key: key, transient: transient, scope: scope) else {
+            throw ContainerError.typeNotRegistered(type: String(describing: type), scope: String(describing: scope))
+        }
+
+        return result
+    }
+
     /// 지정된 타입과 스코프로 인스턴스를 resolve합니다.
     ///
     /// - Parameters:
     ///   - type: resolve할 타입
     ///   - scope: 인스턴스의 생명주기 (기본값: `.transient`)
     /// - Returns: resolve된 인스턴스 또는 nil
+    /// - Note: 내부적으로 throwing resolve()를 사용하며 에러를 무시합니다.
     public func resolveOptional<T>(_ type: T.Type, scope: Scope = .transient) -> T? {
-        let key = makeKey(type, protocols: nil, scope: scope)
-
-        // 기본 등록된 인스턴스
-        guard let transient = storage[key] else { return nil }
-
-        return _resolveWithScope(key: key, transient: transient, scope: scope)
+        try? resolve(type, scope: scope)
     }
     
     /// 프로토콜 타입으로 인스턴스를 resolve합니다.
@@ -117,13 +156,9 @@ public actor Container: ContainerType {
     ///   - protocol: 프로토콜 타입
     ///   - scope: 인스턴스의 생명주기 (기본값: `.transient`)
     /// - Returns: resolve된 인스턴스 또는 nil
+    /// - Note: 내부적으로 throwing resolve()를 사용하며 에러를 무시합니다.
     public func resolveOptional<T, P>(_ type: T.Type, protocol: P.Type, scope: Scope = .transient) -> T? {
-        let key = makeKey(type, protocols: `protocol`, scope: scope)
-
-        // 기본 등록된 인스턴스
-        guard let transient = storage[key] else { return nil }
-
-        return _resolveWithScope(key: key, transient: transient, scope: scope)
+        try? resolve(type, protocol: `protocol`, scope: scope)
     }
     
     /// 등록된 인스턴스를 해제합니다.
