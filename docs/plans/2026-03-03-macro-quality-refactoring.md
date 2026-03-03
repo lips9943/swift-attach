@@ -964,3 +964,69 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 - `docs/plans/2026-03-03-macro-quality-refactoring-design.md` - 상세 설계
 - `docs/architecture/macro-system.md` - 매크로 시스템 아키텍처
 - `docs/guides/scopes.md` - 스코프 가이드
+
+---
+
+## 진행 상황 (2026-03-03)
+
+### 완료된 작업 (Task 1-8)
+
+| Task | 상태 | 설명 | 커밋 |
+|------|------|------|------|
+| Task 1 | ✅ 완료 | BaseScopeMacro 프로토콜 구현 | a88b840 |
+| Task 2 | ✅ 완료 | InstanceMacro를 BaseScopeMacro로 리팩토링 | 8c7ee50 |
+| Task 3 | ✅ 완료 | SharedMacro를 BaseScopeMacro로 리팩토링 | 1979d8c |
+| Task 4 | ✅ 완료 | WeakMacro를 BaseScopeMacro로 리팩토링 | f1e6d20 |
+| Task 5 | ✅ 완료 | LazyMacro를 BaseScopeMacro로 리팩토링 | 9df8a4b |
+| Task 6 | ✅ 완료 | 전체 매크로 테스트 실행 (29 tests 통과) | - |
+| Task 7 | ✅ 완료 | ContainerError 타입 구현 | c0e781c |
+| Task 8 | ✅ 완료 | Container를 Actor로 변환 (Phase 1: 준비) | - |
+
+### 실제 구현과 계획의 차이점
+
+**중요: 계획서와 다르게 구현됨**
+
+1. **MacroScope vs Scope**: 계획서에서는 `Scope` enum을 참조하지만, ServiceAttachMacros 타겟은 ServiceAttach를 import할 수 없으므로 `MacroScope` enum을 별도로 정의하여 사용함
+
+2. **정적 메서드 vs 인스턴스 메서드**: 계획서에서는 인스턴스 메서드 `expand()`를 제안하지만, Swift의 `AccessorMacro` 프로토콜은 정적 메서드 `expansion(of:providingAccessorsOf:in:)`를 요구하므로 정적 메서드 패턴을 따름
+
+3. **코드 생성 방식**: 계획서에서는 `getResolveCode()`가 String을 반환하지만, 실제로는 `generateResolveCode()`가 `AccessorDeclSyntax`를 직접 반환함
+
+4. **WeakMacro 옵셔널 검증**: 원래 WeakMacro 코드에는 옵셔널 검증이 없었으므로 추가하지 않음 (`!` 타입도 허용)
+
+### 구현된 BaseScopeMacro 구조
+
+```swift
+public protocol BaseScopeMacro: AccessorMacro {
+    var scopeType: MacroScope { get }
+    func validateOptionalType(_ type: String, declaration: some DeclSyntaxProtocol, context: some MacroExpansionContext)
+}
+
+public extension BaseScopeMacro {
+    func validateOptionalType(_ type: String, declaration: some DeclSyntaxProtocol, context: some MacroExpansionContext) {}
+
+    func validateOptionalSupport(_ rawType: String, declaration: some DeclSyntaxProtocol, context: some MacroExpansionContext, supported: Bool) { ... }
+
+    func generateResolveCode(type: String, rawType: String, implArg: String?, scope: MacroScope) -> AccessorDeclSyntax { ... }
+}
+```
+
+### 테스트 상태
+
+- **총 29개 테스트 모두 통과**
+  - BaseScopeMacroTests: 1 test
+  - ContainerErrorTests: 2 tests
+  - ContainerTests: 11 tests
+  - InstanceMacroTests: 2 tests
+  - LazyMacroTests: 3 tests
+  - ScopeTests: 3 tests
+  - SharedMacroTests: 2 tests
+  - UnregisterMacroTests: 2 tests
+  - WeakMacroTests: 2 tests
+  - ServiceAttachMacrosTests: 1 test
+
+### 다음 작업
+
+- Task 9: Container를 Actor로 변환 (Phase 2: 변환)
+- Task 10: Container Throwing API 추가
+- Task 11-16: 테스트, 문서, 릴리스 준비
