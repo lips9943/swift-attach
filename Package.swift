@@ -53,6 +53,7 @@ let package = Package(
         .testTarget(
             name: "ServiceAttachMacrosTests",
             dependencies: [
+                "ServiceAttach",
                 "ServiceAttachMacros",
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
             ]

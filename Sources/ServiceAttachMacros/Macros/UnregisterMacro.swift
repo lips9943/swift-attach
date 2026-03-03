@@ -20,7 +20,7 @@ public struct UnregisterMacro: ExtensionMacro {
         guard let types = node.arguments?
             .as(LabeledExprListSyntax.self)?
             .map(\.expression.trimmedDescription) else { return [] }
-        
+
         var addingSyntax: String = ""
         for type in types {
             let fixedtypes = Helper.removeSpecialCharacters(type).split(separator: ",")
@@ -29,14 +29,14 @@ public struct UnregisterMacro: ExtensionMacro {
             let fullSyntax = "Container.shared.unregister(type: \(baseType), protocol: \(protocolType))"
             addingSyntax.append(fullSyntax + "\n")
         }
-        
+
         return [
             try .init(
             """
-            extension View {
+            extension \(type) {
                 private func unregisterObjects() {
                     \(raw: addingSyntax)
-                } 
+                }
             }
             """
             )

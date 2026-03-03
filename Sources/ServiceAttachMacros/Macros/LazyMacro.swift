@@ -1,8 +1,8 @@
 //
-//  InstanceMacro.swift
+//  LazyMacro.swift
 //  ServiceAttach
 //
-//  Created by Jun on 12/29/25.
+//  Created by Claude on 2/26/26.
 //  Refactored to use BaseScopeMacro
 //
 
@@ -11,15 +11,15 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import SwiftOperators
 
-public struct InstanceMacro: BaseScopeMacro {
-    public var scopeType: MacroScope = .transient
+public struct LazyMacro: BaseScopeMacro {
+    public var scopeType: MacroScope = .weak
 
     public static func expansion(
         of node: AttributeSyntax,
         providingAccessorsOf declaration: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext
     ) throws -> [AccessorDeclSyntax] {
-        let macro = InstanceMacro()
+        let macro = LazyMacro()
 
         // impl 인자 파싱
         let implArg = node

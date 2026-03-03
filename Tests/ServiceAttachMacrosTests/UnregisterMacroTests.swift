@@ -23,7 +23,7 @@ final class UnregisterMacroTests: XCTestCase {
                 }
             }
 
-            extension View {
+            extension MyView {
                 private func unregisterObjects() {
                     Container.shared.unregister(type: Presenter.self, protocol: nil)
 
@@ -51,7 +51,7 @@ final class UnregisterMacroTests: XCTestCase {
                 }
             }
 
-            extension View {
+            extension MyView {
                 private func unregisterObjects() {
                     Container.shared.unregister(type: Presenter.self, protocol: nil)
                     Container.shared.unregister(type: Router.self, protocol: nil)

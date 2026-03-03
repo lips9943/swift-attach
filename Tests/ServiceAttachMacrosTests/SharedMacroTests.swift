@@ -20,7 +20,7 @@ final class SharedMacroTests: XCTestCase {
                         return instance
                     } else {
                         let impl = MyService()
-                        ctn.register(impl: impl)
+                        ctn.register(impl: impl, scope: .shared)
                         return impl
                     }
                 }
@@ -44,7 +44,7 @@ final class SharedMacroTests: XCTestCase {
                         return instance
                     } else {
                         let impl = ServiceImpl()
-                        ctn.register(protocol: ServiceProtocol.self, impl: impl)
+                        ctn.register(protocol: ServiceProtocol.self, impl: impl, scope: .shared)
                         return impl
                     }
                 }

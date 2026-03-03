@@ -16,12 +16,11 @@ final class InstanceMacroTests: XCTestCase {
             var service: MyService! {
                 get {
                     let ctn = Container.shared
-
                     if let instance = ctn.resolveOptional(MyService.self,  scope: .transient) {
                         return instance
                     } else {
                         let impl = MyService()
-                        ctn.register(impl: impl)
+                        ctn.register(impl: impl, scope: .transient)
                         return impl
                     }
                 }
@@ -41,12 +40,11 @@ final class InstanceMacroTests: XCTestCase {
             var service: ServiceProtocol! {
                 get {
                     let ctn = Container.shared
-
                     if let instance = ctn.resolveOptional(ServiceImpl.self, protocol: ServiceProtocol.self, scope: .transient) {
                         return instance
                     } else {
                         let impl = ServiceImpl()
-                        ctn.register(protocol: ServiceProtocol.self, impl: impl)
+                        ctn.register(protocol: ServiceProtocol.self, impl: impl, scope: .transient)
                         return impl
                     }
                 }
