@@ -37,14 +37,14 @@ private class WeakBox<T: AnyObject> {
 /// 의존성 주입을 위한 컨테이너입니다.
 ///
 /// `Container`는 객체의 생명주기를 관리하고 인스턴스를 등록/해제합니다.
-public final class Container: ContainerType {
-    private let lock = NSLock()
+/// Swift 6 Concurrency 모델을 준수하기 위해 actor 기반으로 구현되었습니다.
+public actor Container: ContainerType {
     private lazy var storage: [String: () -> Any] = [:]
     private lazy var singletonStorage: [String: Any] = [:]
     private lazy var weakStorage: [String: WeakBox<AnyObject>] = [:]
 
     /// 공유 컨테이너 싱글톤 인스턴스입니다.
-    nonisolated(unsafe) public static let shared = Container()
+    public static let shared = Container()
     
     /// 새 컨테이너 인스턴스를 생성합니다.
     public init() {}
@@ -102,13 +102,11 @@ public final class Container: ContainerType {
     ///   - scope: 인스턴스의 생명주기 (기본값: `.transient`)
     /// - Returns: resolve된 인스턴스 또는 nil
     public func resolveOptional<T>(_ type: T.Type, scope: Scope = .transient) -> T? {
-        lock.lock()
-        defer { lock.unlock() }
         let key = makeKey(type, protocols: nil, scope: scope)
-        
+
         // 기본 등록된 인스턴스
         guard let transient = storage[key] else { return nil }
-        
+
         return _resolveWithScope(key: key, transient: transient, scope: scope)
     }
     
@@ -120,14 +118,11 @@ public final class Container: ContainerType {
     ///   - scope: 인스턴스의 생명주기 (기본값: `.transient`)
     /// - Returns: resolve된 인스턴스 또는 nil
     public func resolveOptional<T, P>(_ type: T.Type, protocol: P.Type, scope: Scope = .transient) -> T? {
-        lock.lock()
-        defer { lock.unlock() }
-        
         let key = makeKey(type, protocols: `protocol`, scope: scope)
-        
+
         // 기본 등록된 인스턴스
         guard let transient = storage[key] else { return nil }
-        
+
         return _resolveWithScope(key: key, transient: transient, scope: scope)
     }
     
@@ -137,8 +132,6 @@ public final class Container: ContainerType {
     ///   - type: 해제할 타입
     ///   - protocol: 프로토콜 타입 (nil인 경우 구체 타입)
     public func unregister<T>(type: T.Type, protocol: Any.Type?) {
-        lock.lock()
-        defer { lock.unlock() }
         let key = makeKey(type, protocols: `protocol`, scope: .transient)
         singletonStorage.removeValue(forKey: key)
         weakStorage.removeValue(forKey: weakString + key)
@@ -147,8 +140,6 @@ public final class Container: ContainerType {
     
     /// 모든 등록된 인스턴스를 해제합니다.
     public func clearAll() {
-        lock.lock()
-        defer { lock.unlock() }
         singletonStorage.removeAll()
         weakStorage.removeAll()
         storage.removeAll()
@@ -187,9 +178,11 @@ extension Container {
                 return value
             }
             // 없으면 새로 생성하고 weak 박스에 저장
-            guard let result = transient() as? T, let objectResult = result as? AnyObject else {
+            guard let result = transient() as? T else {
                 return nil
             }
+            // AnyObject로 변환 (class 타입만 weak 지원)
+            let objectResult = result as AnyObject
             weakStorage[key] = WeakBox(objectResult)
             return result
         }
@@ -204,9 +197,9 @@ extension Container {
             break
         case .weak:
             // weak 박스에 래핑하여 저장
-            if let objectValue = value() as? AnyObject {
-                weakStorage[key] = WeakBox(objectValue)
-            }
+            let objectValue = value()
+            let objectValueAsAnyObject = objectValue as AnyObject
+            weakStorage[key] = WeakBox(objectValueAsAnyObject)
         }
     }
 }
