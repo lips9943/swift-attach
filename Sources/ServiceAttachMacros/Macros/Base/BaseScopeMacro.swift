@@ -64,7 +64,7 @@ public extension BaseScopeMacro {
         rawType: String,
         implArg: String?,
         scope: MacroScope
-    ) -> String {
+    ) -> AccessorDeclSyntax {
         var resolveType: String = ""
         var impl: String = ""
         var protocolType: String = ""
@@ -80,14 +80,15 @@ public extension BaseScopeMacro {
             impl = "\(type)()"
         }
 
+        let scopeValue = scope.codeValue
         return """
         get {
             let ctn = Container.shared
-            if let instance = ctn.resolveOptional(\(resolveType)\(protocolType) scope: \(scope.codeValue)) {
+            if let instance = ctn.resolveOptional(\(raw: resolveType)\(raw: protocolType) scope: \(raw: scopeValue)) {
                 return instance
             } else {
-                let impl = \(impl)
-                ctn.register(\(protocolType)impl: impl)
+                let impl = \(raw: impl)
+                ctn.register(\(raw: protocolType)impl: impl, scope: \(raw: scopeValue))
                 return impl
             }
         }
