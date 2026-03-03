@@ -18,6 +18,23 @@ ServiceAttach는 Swift Compiler Plugin과 Macro 시스템을 활용하여
 - **@Lazy** - 지연 초기화 (첫 접근 시 생성)
 - **@Unregister** - 자동 등록 해제
 
+### Swift 6 Concurrency 준수
+
+- **스레드 안전**: `NSLock` 기반 동기화로 데이터 레이스 방지
+- **Actor 격리**: 내부 상태는 actor로 보호
+- **Nonisolated API**: 모든 공개 메서드는 `await` 없이 호출 가능
+- **Sendable 지원**: 모든 공개 타입은 `Sendable` 준수
+
+### 구조화된 에러 처리
+
+```swift
+do {
+    let service: MyService = try Container.shared.resolve(MyService.self)
+} catch ContainerError.typeNotRegistered(let type, let scope) {
+    print("\(type) 타입이 \(scope) 스코프에 등록되지 않음")
+}
+```
+
 ## 빠른 시작
 
 ### 1. 의존성 추가

@@ -2,6 +2,24 @@
 
 ServiceAttach의 모든 매크로와 사용법을 안내합니다.
 
+## 매크로 아키텍처
+
+### BaseScopeMacro 프로토콜
+
+모든 스코프 매크로(`@Instance`, `@Shared`, `@Weak`, `@Lazy`)는 `BaseScopeMacro` 프로토콜을 기반으로 구현됩니다. 이를 통해 매크로 간 중복 코드를 제거하고 일관된 동작을 보장합니다.
+
+```swift
+public protocol BaseScopeMacro: AccessorMacro {
+    var scopeType: MacroScope { get }
+    func validateOptionalType(_ type: String, declaration: some DeclSyntaxProtocol, context: some MacroExpansionContext)
+}
+```
+
+**장점:**
+- 코드 중복 제거: 모든 매크로가 공통 로직을 공유
+- 일관된 에러 처리: 통합된 검증 로직
+- 유지보수성 향상: 버그 수정이 모든 매크로에 적용
+
 ## @Instance
 
 매번 새 인스턴스를 생성합니다.

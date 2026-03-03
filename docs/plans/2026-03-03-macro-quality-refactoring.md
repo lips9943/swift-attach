@@ -969,7 +969,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 
 ## 진행 상황 (2026-03-03)
 
-### 완료된 작업 (Task 1-8)
+### 완료된 작업 (Task 1-11)
 
 | Task | 상태 | 설명 | 커밋 |
 |------|------|------|------|
@@ -981,6 +981,47 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 | Task 6 | ✅ 완료 | 전체 매크로 테스트 실행 (29 tests 통과) | - |
 | Task 7 | ✅ 완료 | ContainerError 타입 구현 | c0e781c |
 | Task 8 | ✅ 완료 | Container를 Actor로 변환 (Phase 1: 준비) | - |
+| Task 9 | ✅ 완료 | Container를 Actor로 변환 (Phase 2: 변환) | 776fdda |
+| Task 10 | ✅ 완료 | Container Throwing API 추가 | ed69286 |
+| Task 11 | ✅ 완료 | 에러 처리 테스트 추가 | 03c64d3 |
+
+### Task 9-11 상세
+
+#### Task 9: Container를 Actor로 변환 (Phase 2: 변환)
+- `class Container` → `actor Container`로 변경
+- `NSLock` 및 모든 lock 관련 코드 제거
+- `nonisolated(unsafe)` 제거
+- Conditional cast 경고 수정 (direct cast 사용)
+- **알려진 문제**: Actor 변환으로 인해 기존 매크로 코드에서 actor-isolated call 에러 발생
+  - 이는 Task 14에서 매크로를 수정하여 `await`를 추가할 때 해결 예정
+
+#### Task 10: Container Throwing API 추가
+- `resolve<T>(_:scope:) throws -> T` 메서드 추가
+- `resolve<T,P>(_:protocol:scope:) throws -> T` 메서드 추가
+- `resolveOptional`을 throwing 버전의 래퍼로 변경 (`try? resolve(...)`)
+- ServiceAttach 라이브러리 타겟 컴파일 성공
+
+#### Task 11: 에러 처리 테스트 추가
+- ContainerErrorTests.swift 확장
+- Throwing API 테스트 추가 (미등록 타입 에러 검증)
+- Optional API 테스트 추가 (nil 반환 확인)
+- Integration 테스트 추가 (등록된 타입 정상 resolve)
+- **참고**: 테스트는 ServiceAttachClient의 actor-isolated call 문제 해결 후 실행 가능
+
+### 현재 상태 (2026-03-03)
+
+- ✅ ServiceAttach 라이브러리 타겟: 컴파일 성공
+- ❌ ServiceAttachClient 예제: actor-isolated call 에러 (예상됨)
+- ❌ 전체 테스트: 실행되지 않음 (예제 컴파일 실패로 인해)
+
+### 해결 필요한 문제
+
+1. **Actor-isolated call 에러**: 모든 매크로(@Instance, @Shared, @Weak, @Lazy, @Unregister)가 생성한 코드에서 `await`가 필요함
+   - `Container.shared.resolveOptional()` → `await Container.shared.resolveOptional()`
+   - `Container.shared.register()` → `await Container.shared.register()`
+   - `Container.shared.unregister()` → `await Container.shared.unregister()`
+
+2. **UnregisterMacro 경고**: 프로토콜 조합 확장 경고 수정 필요
 
 ### 실제 구현과 계획의 차이점
 
@@ -1011,6 +1052,26 @@ public extension BaseScopeMacro {
 }
 ```
 
+### Task 14 완료 (2026-03-03)
+
+#### Task 14: actor-isolated call 에러 해결 및 UnregisterMacro 버그 수정
+- `Container`를 `nonisolated` 공개 API와 내부 NSLock 동기화로 리팩토링
+  - `ContainerStorage` 클래스 추가: `@unchecked Sendable`, NSLock 기반 동기화
+  - 모든 공개 메서드를 `nonisolated`로 변경하여 매크로 getter에서 호출 가능
+  - 내부 상태는 `ContainerStorage`에 위임하여 thread-safe 보장
+- UnregisterMacro 버그 수정
+  - `extension View` → `extension \(type)`으로 변경하여 실제 타입에 확장 추가
+- 테스트 수정
+  - ContainerErrorTests: `await` 제거, `type` 파라미터 추가, 에러 케이스 매칭 수정
+  - UnregisterMacroTests: `extension MyView` 기대하도록 수정
+- **결과**: 모든 36개 테스트 통과
+
+### 현재 상태 (2026-03-03 Task 14 완료 후)
+
+- ✅ ServiceAttach 라이브러리 타겟: 컴파일 성공
+- ✅ ServiceAttachClient 예제: 컴파일 성공
+- ✅ 전체 테스트: 36개 테스트 모두 통과
+
 ### 테스트 상태
 
 - **총 29개 테스트 모두 통과**
@@ -1025,8 +1086,42 @@ public extension BaseScopeMacro {
   - WeakMacroTests: 2 tests
   - ServiceAttachMacrosTests: 1 test
 
-### 다음 작업
+### 다음 작업 (남은 Task 12-16)
 
-- Task 9: Container를 Actor로 변환 (Phase 2: 변환)
-- Task 10: Container Throwing API 추가
-- Task 11-16: 테스트, 문서, 릴리스 준비
+- Task 12: 스레드 안전성 테스트 추가 (ConcurrencyTests.swift)
+- Task 13: 전체 테스트 실행 및 검증
+- Task 14: **UnregisterMacro 버그 수정** + **모든 매크로에 await 추가**
+- Task 15: 문서 업데이트
+- Task 16: 최종 검증 및 릴리스 준비
+
+### 중요: Task 14 범위 확장
+
+**Task 14는 이제 다음을 포함해야 합니다:**
+1. UnregisterMacro 버그 수정 (프로토콜 조합 확장 경고)
+2. **모든 매크로에 await 추가** (actor-isolated call 해결)
+   - InstanceMacro: 생성된 getter에 `await` 추가
+   - SharedMacro: 생성된 getter에 `await` 추가
+   - WeakMacro: 생성된 getter에 `await` 추가
+   - LazyMacro: 생성된 getter와 register 호출에 `await` 추가
+   - UnregisterMacro: 생성된 unregisterObjects()에 `await` 추가
+
+**변경 예시:**
+```swift
+// Before (actor 변환 전)
+get {
+    let ctn = Container.shared
+    if let instance = ctn.resolveOptional(Service.self, scope: .transient) {
+        return instance
+    }
+    // ...
+}
+
+// After (actor 변환 후)
+get {
+    let ctn = Container.shared
+    if let instance = await ctn.resolveOptional(Service.self, scope: .transient) {
+        return instance
+    }
+    // ...
+}
+```
