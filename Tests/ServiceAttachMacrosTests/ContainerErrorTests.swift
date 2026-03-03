@@ -33,11 +33,14 @@ final class ContainerErrorTests: XCTestCase {
     // MARK: - Throwing API Tests
 
     func testResolveUnregisteredTypeThrows() async {
-        await XCTAssertThrowsError(
-            try await Container.shared.resolve(UnregisteredService.self)
+        XCTAssertThrowsError(
+            try Container.shared.resolve(UnregisteredService.self)
         ) { error in
-            XCTAssertTrue(error is ContainerError)
-            if case .typeNotRegistered(let type, let scope) = error {
+            guard let containerError = error as? ContainerError else {
+                XCTFail("Expected ContainerError")
+                return
+            }
+            if case .typeNotRegistered(let type, let scope) = containerError {
                 XCTAssertEqual(type, "UnregisteredService")
                 XCTAssertEqual(scope, "transient")
             } else {
@@ -47,11 +50,14 @@ final class ContainerErrorTests: XCTestCase {
     }
 
     func testResolveUnregisteredTypeWithSharedScopeThrows() async {
-        await XCTAssertThrowsError(
-            try await Container.shared.resolve(UnregisteredService.self, scope: .shared)
+        XCTAssertThrowsError(
+            try Container.shared.resolve(UnregisteredService.self, scope: .shared)
         ) { error in
-            XCTAssertTrue(error is ContainerError)
-            if case .typeNotRegistered(let type, let scope) = error {
+            guard let containerError = error as? ContainerError else {
+                XCTFail("Expected ContainerError")
+                return
+            }
+            if case .typeNotRegistered(let type, let scope) = containerError {
                 XCTAssertEqual(type, "UnregisteredService")
                 XCTAssertEqual(scope, "shared")
             } else {
@@ -61,12 +67,16 @@ final class ContainerErrorTests: XCTestCase {
     }
 
     func testResolveUnregisteredProtocolThrows() async {
-        await XCTAssertThrowsError(
-            try await Container.shared.resolve(UnregisteredService.self, protocol: UnregisterProtocol.self)
+        XCTAssertThrowsError(
+            try Container.shared.resolve(UnregisteredService.self, protocol: UnregisterProtocol.self)
         ) { error in
-            XCTAssertTrue(error is ContainerError)
-            if case .typeNotRegistered = error {
-                // Expected error type
+            guard let containerError = error as? ContainerError else {
+                XCTFail("Expected ContainerError")
+                return
+            }
+            if case .typeNotRegistered(let type, let scope) = containerError {
+                XCTAssertEqual(type, "UnregisteredService")
+                XCTAssertEqual(scope, "transient")
             } else {
                 XCTFail("Expected typeNotRegistered error")
             }
@@ -76,12 +86,12 @@ final class ContainerErrorTests: XCTestCase {
     // MARK: - Optional API Tests
 
     func testResolveOptionalReturnsNilForUnregistered() async {
-        let result: UnregisteredService? = await Container.shared.resolveOptional()
+        let result: UnregisteredService? = Container.shared.resolveOptional(UnregisteredService.self)
         XCTAssertNil(result, "등록되지 않은 타입은 nil을 반환해야 합니다")
     }
 
     func testResolveOptionalWithSharedScopeReturnsNilForUnregistered() async {
-        let result: UnregisteredService? = await Container.shared.resolveOptional(scope: .shared)
+        let result: UnregisteredService? = Container.shared.resolveOptional(UnregisteredService.self, scope: .shared)
         XCTAssertNil(result, "등록되지 않은 타입은 nil을 반환해야 합니다")
     }
 
@@ -89,26 +99,26 @@ final class ContainerErrorTests: XCTestCase {
 
     func testResolveRegisteredTypeSucceeds() async {
         // 등록
-        await Container.shared.register(impl: TestService())
+        Container.shared.register(impl: TestService())
 
         // 정상 resolve
-        let result: TestService? = await Container.shared.resolveOptional()
+        let result: TestService? = Container.shared.resolveOptional(TestService.self)
         XCTAssertNotNil(result)
 
         // 정리
-        await Container.shared.clearAll()
+        Container.shared.clearAll()
     }
 
     func testThrowingResolveRegisteredTypeSucceeds() async throws {
         // 등록
-        await Container.shared.register(impl: TestService())
+        Container.shared.register(impl: TestService())
 
         // 정상 resolve
-        let result: TestService = try await Container.shared.resolve()
+        let result: TestService = try Container.shared.resolve(TestService.self)
         XCTAssertNotNil(result)
 
         // 정리
-        await Container.shared.clearAll()
+        Container.shared.clearAll()
     }
 }
 
