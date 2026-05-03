@@ -123,22 +123,39 @@ struct Entity {
     }
 }
 
-
-class A {
+protocol bb {}
+@Service
+struct A : bb {
     var text:String = "123"
 }
 
-class B {
+@Service
+class B : DetailFix {
+    func fix(name: String) {
+        
+    }
+    
     var text:String = "456"
+    init(text: String) {
+        self.text = text
+    }
+    
+    init() {
+        self.text = "456"
+    }
+    
 }
-@Unregister(type: (A.self, nil))
+
+@Service
+actor C {
+    private let a: A
+    var text:String = "789"
+}
+
 class Test {
-    @Shared
-    var a: A
-//
-//    var b: B
-    deinit {
-        unregisterObjects()
+    
+    func asdf() {
+        
     }
 }
 
