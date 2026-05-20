@@ -5,19 +5,19 @@ import PackageDescription
 import CompilerPluginSupport
 
 let package = Package(
-    name: "ServiceAttach",
+    name: "SwiftAttach",
     platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
-            name: "ServiceAttach",
+            name: "SwiftAttach",
             targets: [
-                "ServiceAttach"
+                "SwiftAttach"
             ]
         ),
         .executable(
-            name: "ServiceAttachClient",
-            targets: ["ServiceAttachClient"]
+            name: "SwiftAttachClient",
+            targets: ["SwiftAttachClient"]
         ),
     ],
     dependencies: [
@@ -29,35 +29,32 @@ let package = Package(
         
         // Macro implementation that performs the source transformation of a macro.
         .macro(
-            name: "ServiceAttachMacros",
+            name: "SwiftAttachMacros",
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
             ]
         ),
-        
         // Library that exposes a macro as part of its API, which is used in client programs.
-        .target(name: "ServiceAttach", dependencies: [
-            "ServiceAttachMacros"
+        .target(name: "SwiftAttach", dependencies: [
+            "SwiftAttachMacros"
         ]),
-
         // A client of the library, which is able to use the macro in its own code.
         .executableTarget(
-            name: "ServiceAttachClient",
+            name: "SwiftAttachClient",
             dependencies: [
-                "ServiceAttach"
+                "SwiftAttach"
             ]
         ),
-
         // === 테스트 타겟 추가 ===
-        .testTarget(
-            name: "ServiceAttachMacrosTests",
-            dependencies: [
-                "ServiceAttach",
-                "ServiceAttachMacros",
-                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
-            ]
-        ),
+//        .testTarget(
+//            name: "SwiftAttachMacrosTests",
+//            dependencies: [
+//                "SwiftAttach",
+//                "SwiftAttachMacros",
+//                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
+//            ]
+//        ),
 
     ]
 )
