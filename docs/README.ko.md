@@ -1,6 +1,6 @@
 # SwiftAttach 🚀
 
-> [English](docs/README.md) | [한국어](docs/README.ko.md) | [日本語](docs/README.ja.md) | [中文](docs/README.zh.md)
+> [English](README.md) | [日本語](README.ja.md) | [中文](README.zh.md)
 
 `SwiftAttach`는 **Swift Macros**를 활용하여 컴파일 타임에 타입 안전하고 선언적인 **의존성 주입(Dependency Injection)**을 제공하는 경량 DI 프레임워크입니다.
 
