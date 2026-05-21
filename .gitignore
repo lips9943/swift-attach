@@ -13,6 +13,5 @@ CLAUDE.md
 docs/plans/*
 docs/api/
 
-#
 .github/
-Service\ Attach.xcodeproj
+Service Attach.xcodeproj
