@@ -12,3 +12,6 @@ CLAUDE.md
 .worktrees/
 docs/plans/*
 docs/api/
+
+.github/
+Service Attach.xcodeproj
