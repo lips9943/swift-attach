@@ -1,8 +1,10 @@
 # SwiftAttach 🚀
 
-> [English](docs/README.md) | [한국어](docs/README.ko.md) | [日本語](docs/README.ja.md) | [中文](docs/README.zh.md)
+> [한국어](README.ko.md) | [日本語](README.ja.md) | [中文](README.zh.md)
 
-`SwiftAttach`는 **Swift Macros**를 활용하여 컴파일 타임에 타입 안전하고 선언적인 **의존성 주입(Dependency Injection)**을 제공하는 경량 DI 프레임워크입니다.
+`SwiftAttach` is a lightweight Dependency Injection (DI) framework that provides type-safe, declarative DI through **Swift Macros** at compile time.
+
+Define dependency relationships with annotation-based syntax and build a safe, flexible DI system without boilerplate code via compile-time code generation.
 
 ---
 
@@ -10,13 +12,13 @@
 
 ### Swift Package Manager
 
-`Xcode`에서 `File > Add Package Dependencies...` 후 다음 URL을 입력하세요:
+In Xcode, go to `File > Add Package Dependencies...` and enter the following URL:
 
 ```
 https://github.com/lips9943/swift-attach.git
 ```
 
-또는 `Package.swift`에 직접 추가:
+Or add it directly to `Package.swift`:
 
 ```swift
 dependencies: [
@@ -43,7 +45,7 @@ targets: [
 
 ## Quick Start
 
-### 1. 프로토콜 및 구현체 정의
+### 1. Define Protocol and Implementation
 
 ```swift
 import SwiftAttach
@@ -58,7 +60,7 @@ class RepositoryImpl: Repository {
 }
 ```
 
-### 2. 설정 클래스 작성
+### 2. Write Configuration Class
 
 ```swift
 @AttachConfig
@@ -69,19 +71,19 @@ class DIConfig {
 }
 ```
 
-### 3. 애플리케이션 초기화
+### 3. Initialize Application
 
 ```swift
-// 앱 시작 시 한 번만 실행
+// Run once at app launch
 DIConfig()
 ```
 
-### 4. 의존성 사용
+### 4. Use Dependencies
 
 ```swift
 @Service
 class ServiceImpl: Service {
-    var repo: Repository! // RepositoryImpl이 자동 주입됨
+    var repo: Repository! // RepositoryImpl is injected automatically
 }
 ```
 
@@ -91,57 +93,57 @@ class ServiceImpl: Service {
 
 ### `@Service`
 
-의존성 주입이 필요한 클래스/구조체에 선언합니다. 내부 변수를 자동으로 분석하여 `@PropertyInjection`을 부여하고, 컨테이너에서 인스턴스를 가져오는 비공개 프로퍼티를 생성합니다.
+Declare on classes or structs that need dependency injection. It automatically analyzes internal variables, applies `@PropertyInjection`, and generates private properties to fetch instances from the container.
 
 ### `@AttachConfig`
 
-DI 컨테이너에 객체를 등록하는 구성 클래스에 선언합니다. 내부 메서드를 분석하여 자동으로 컨테이너에 등록하는 `init()`을 생성합니다.
+Declare on configuration classes that register objects with the DI container. It analyzes internal methods and automatically generates an `init()` that registers them with the container.
 
 ### `@PropertyInjection`
 
-변수 선언에 부착하여 실제 getter를 비공개 매크로 확장 프로퍼티와 연결합니다. 주입 대상 변수는 옵셔널(`?`) 또는 암시적 언래핑 옵셔널(`!`) 타입이어야 합니다.
+Attaches to variable declarations to connect the actual getter to a private macro-expanded property. The injection target must be an optional (`?`) or implicitly unwrapped optional (`!`) type.
 
-### 마커 매크로
+### Marker Macros
 
-| 마크 | 설명 |
-|------|------|
-| `@Singleton` | 해당 의존성을 싱글톤(`.shared` 스코프)으로 주입 |
-| `@NonImplement` | 표준 `[Type]Impl` 규칙이 없는 타입을 직접 컨테이너에서 검색 |
-| `@Ignore` | 특정 변수를 DI 주입 대상에서 배제 |
+| Marker | Description |
+|--------|-------------|
+| `@Singleton` | Inject the dependency as a singleton (`.shared` scope) |
+| `@NonImplement` | Search the container directly for types that don't follow the `[Type]Impl` naming convention |
+| `@Ignore` | Exclude a specific variable from DI injection |
 
 ---
 
 ## Container API
 
-### 등록 (Register)
+### Register
 
 ```swift
 let container = Container()
 
-// 타입으로 등록
+// Register by type
 container.register(impl: RepositoryImpl())
 
-// 프로토콜 매핑으로 등록
+// Register with protocol mapping
 container.register(protocol: Repository.self, impl: RepositoryImpl())
 
-// 스코프 지정
+// With scope
 container.register(impl: RepositoryImpl(), scope: .shared)
 ```
 
-### 해결 (Resolve)
+### Resolve
 
 ```swift
-// 타입으로 해결
+// Resolve by type
 let repo = try container.resolve(RepositoryImpl.self)
 
-// 프로토콜로 해결
+// Resolve by protocol
 let repo = try container.resolve(RepositoryImpl.self, protocol: Repository.self)
 
-// 옵셔널 해결 (실패 시 nil)
+// Optional resolve (returns nil on failure)
 let repo = container.resolveOptional(RepositoryImpl.self)
 ```
 
-### 해제 (Unregister)
+### Unregister
 
 ```swift
 container.unregister(type: RepositoryImpl.self, protocol: Repository.self)
