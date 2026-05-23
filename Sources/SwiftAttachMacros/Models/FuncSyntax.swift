@@ -11,5 +11,6 @@ struct FuncSyntax {
     let parameters: [(name: String, type: String)]
     let isThrowing: Bool
     let isAsync: Bool
+    let attributes: [Attribute]
     let scope: ScopeSyntax
 }

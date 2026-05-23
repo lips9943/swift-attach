@@ -16,7 +16,8 @@ struct SwiftAttachPlugin: CompilerPlugin {
         // Non Functional Macros
         IgnoreMacro.self,
         NonImplementMacro.self,
-        SingletonMacro.self
+        SingletonMacro.self,
+        NamedMacro.self
     ]
 }
 

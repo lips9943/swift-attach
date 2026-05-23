@@ -26,15 +26,24 @@ extension AttachConfigMacro: MemberMacro {
             .compactMap { $0.decl.as(FunctionDeclSyntax.self) }
             .map { SyntaxUtil.findFunctionSyntax(funcDecl: $0) }
             .compactMap {
-                guard let returnType = $0.returnType else { return nil}
-                return "container.register(protocol: \(returnType).self, impl: self.\($0.name)(), scope: .transient)"
+                guard let returnType = $0.returnType else { return nil }
+                if $0.attributes.contains(where: {$0.name == "NonImplement"}) {
+                    return "container.register(impl: \($0.name)(), scope: .transient)"
+                } else if $0.attributes.contains(where: { $0.name == "Named" }),
+                          let firstValue = $0.attributes.first,
+                          let parameterValue = firstValue.arguments.first?.type {
+                    
+                    return "container.register(customKey: \(parameterValue), protocol: \(returnType).self, impl: \($0.name)(), scope: .transient)"
+                } else {
+                    return "container.register(customKey: \"\(returnType)Impl\", protocol: \(returnType).self, impl: \($0.name)(), scope: .transient)"
+                }
             }.joined(separator: "\n")
         
         
         return [
             """
             @discardableResult
-            init() {
+            public init() {
                 let container = SwiftAttach.Container()
                 \(raw: funcSyntax)
             }

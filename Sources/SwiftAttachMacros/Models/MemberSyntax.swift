@@ -8,7 +8,7 @@
 struct MemberSyntax {
     let name: String
     let type: String
-    let attributes: [String]
+    let attributes: [Attribute]
     let scope: ScopeSyntax
     let isOptional: Bool
     let isImplicitlyUnwrappedOptional: Bool

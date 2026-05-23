@@ -107,6 +107,7 @@ class ServiceImpl: Service {
 |------|------|
 | `@Singleton` | 以单例（`.shared` 作用域）注入依赖 |
 | `@NonImplement` | 对不符合标准 `[Type]Impl` 命名规范的类型，直接在容器中搜索 |
+| `@Named("key")` | 使用指定的自定义键注册或解析依赖，而不是使用标准的 `[Type]Impl` 命名规范 |
 | `@Ignore` | 将特定变量从 DI 注入中排除 |
 
 ---

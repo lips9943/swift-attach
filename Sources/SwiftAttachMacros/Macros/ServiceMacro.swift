@@ -27,12 +27,17 @@ extension ServiceMacro: MemberMacro {
         // init 안에 들어갈 파라미터를 계산
         let parameters: [DeclSyntax] = members
             .compactMap { member in
-                guard !member.attributes.contains(where: {$0 == "Ignore"}) else { return nil }
-                let scope = member.attributes.contains(where: { $0 == "Singleton" }) ? ".shared" : ".transient"
-                if member.attributes.contains(where: { $0 == "NonImplement" }) {
-                    return "private let _\(raw: member.name): \(raw: member.type)? = Container().resolveOptional(\(raw: member.type).self, scope: \(raw: scope))"
+                guard !member.attributes.contains(where: {$0.name == "Ignore"}),
+                      member.type.contains("Service") || member.type.contains("Repository") else { return nil }
+                let scope = member.attributes.contains(where: { $0.name == "Singleton" }) ? ".shared" : ".transient"
+                if member.attributes.contains(where: { $0.name == "NonImplement" }) {
+                    return "private lazy var _\(raw: member.name): \(raw: member.type)? = Container().resolveOptional(\(raw: member.type).self, scope: \(raw: scope))"
+                } else if member.attributes.contains(where: { $0.name == "Named" }),
+                          let firstValue = member.attributes.first,
+                          let parameterValue = firstValue.arguments.first?.type {
+                    return "private lazy var _\(raw: member.name): \(raw: member.type)? = Container().resolve(impl: \(raw: parameterValue), protocol: \(raw: member.type).self, scope: \(raw: scope))"
                 } else {
-                    return "private let _\(raw: member.name): \(raw: member.type)? = Container().resolve(impl: \"\(raw: member.type)Impl\", protocol: \(raw: member.type).self, scope: \(raw: scope))"
+                    return "private lazy var _\(raw: member.name): \(raw: member.type)? = Container().resolve(impl: \"\(raw: member.type)Impl\", protocol: \(raw: member.type).self, scope: \(raw: scope))"
                 }
             }
         
@@ -52,10 +57,13 @@ extension ServiceMacro: MemberAttributeMacro {
     ) throws -> [AttributeSyntax] {
         // 변수 선언만 처리
         
-        guard let variable = member.as(VariableDeclSyntax.self) else { return [] }
+        guard let variable = member.as(VariableDeclSyntax.self),
+              let type = variable.bindings.first?.typeAnnotation?.type.trimmedDescription,
+              type.contains("Service") || type.contains("Repository") else { return [] }
         
         for attribute in variable.attributes {
-            if let att = attribute.as(AttributeSyntax.self), att.attributeName.trimmedDescription == "Ignore" {
+            if let att = attribute.as(AttributeSyntax.self),
+               att.attributeName.trimmedDescription == "Ignore" {
                 return []
             }
         }

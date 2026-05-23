@@ -6,7 +6,7 @@ import CompilerPluginSupport
 
 let package = Package(
     name: "SwiftAttach",
-    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
+    platforms: [.macOS(.v11), .iOS(.v13), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
@@ -15,10 +15,10 @@ let package = Package(
                 "SwiftAttach"
             ]
         ),
-        .executable(
-            name: "SwiftAttachClient",
-            targets: ["SwiftAttachClient"]
-        ),
+//        .executable(
+//            name: "SwiftAttachClient",
+//            targets: ["SwiftAttachClient"]
+//        ),
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "602.0.0-latest"),

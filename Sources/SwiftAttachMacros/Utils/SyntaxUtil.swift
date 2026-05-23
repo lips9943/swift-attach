@@ -68,7 +68,19 @@ struct SyntaxUtil {
         }
         
         // 매크로
-        let attributes = varDecl.attributes.compactMap { $0.as(AttributeSyntax.self)?.attributeName.trimmedDescription }
+        let attributes = varDecl.attributes
+            .compactMap { $0.as(AttributeSyntax.self)}
+            .map {
+                let name = $0.attributeName.trimmedDescription
+                guard let list = $0.arguments?.as(LabeledExprListSyntax.self) else { return Attribute(name: name, arguments: []) }
+                
+                var arguments: [(String?, String)] = []
+                for argument in list {
+                    arguments.append((argument.label?.text, argument.expression.trimmedDescription))
+                }
+                
+                return Attribute(name: name, arguments: arguments)
+            }
         
         return MemberSyntax(
             name: name,
@@ -87,7 +99,20 @@ struct SyntaxUtil {
         let isThrowing = funcDecl.signature.effectSpecifiers?.throwsClause != nil
         let isAsync = funcDecl.signature.effectSpecifiers?.asyncSpecifier != nil
         let scope = scopesFromModifiers(funcDecl.modifiers)
-        return .init(name: name, returnType: returnType, parameters: params, isThrowing: isThrowing, isAsync: isAsync, scope: scope)
+        let atrributes: [Attribute] = funcDecl.attributes
+            .compactMap { $0.as(AttributeSyntax.self)}
+            .map {
+                let name = $0.attributeName.trimmedDescription
+                guard let list = $0.arguments?.as(LabeledExprListSyntax.self) else { return Attribute(name: name, arguments: []) }
+                
+                var arguments: [(String?, String)] = []
+                for argument in list {
+                    arguments.append((argument.label?.text, argument.expression.trimmedDescription))
+                }
+                
+                return Attribute(name: name, arguments: arguments)
+            }
+        return .init(name: name, returnType: returnType, parameters: params, isThrowing: isThrowing, isAsync: isAsync, attributes: atrributes, scope: scope)
     }
     
     static func scopesFromModifiers(_ modifiers: DeclModifierListSyntax) -> ScopeSyntax {

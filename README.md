@@ -109,6 +109,7 @@ Attaches to variable declarations to connect the actual getter to a private macr
 |--------|-------------|
 | `@Singleton` | Inject the dependency as a singleton (`.shared` scope) |
 | `@NonImplement` | Search the container directly for types that don't follow the `[Type]Impl` naming convention |
+| `@Named("key")` | Register or resolve the dependency with a custom key instead of the standard `[Type]Impl` naming convention |
 | `@Ignore` | Exclude a specific variable from DI injection |
 
 ---
