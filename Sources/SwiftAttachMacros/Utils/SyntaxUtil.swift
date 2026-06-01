@@ -95,6 +95,8 @@ struct SyntaxUtil {
     static func findFunctionSyntax(funcDecl: FunctionDeclSyntax) -> FuncSyntax {
         let name = funcDecl.name.text
         let returnType = funcDecl.signature.returnClause?.type.trimmedDescription
+            .replacingOccurrences(of: "any", with: "")
+            .replacingOccurrences(of: " ", with: "")
         let params = funcDecl.signature.parameterClause.parameters.map { (name: $0.firstName.text, type: $0.type.trimmedDescription) }
         let isThrowing = funcDecl.signature.effectSpecifiers?.throwsClause != nil
         let isAsync = funcDecl.signature.effectSpecifiers?.asyncSpecifier != nil

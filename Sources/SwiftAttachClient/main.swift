@@ -15,7 +15,7 @@ class RepositoryImpl: Repository {
     var text: String! = "Hello, World!"
 }
 
-protocol Service {
+protocol Service : AnyObject {
     var repo: Repository! { get }
 }
 
@@ -28,6 +28,10 @@ class Utils {
     
 }
 
+class MyService: Service {
+    var repo: Repository!
+}
+
 @Service
 class ViewModel {
     @Singleton
@@ -37,6 +41,9 @@ class ViewModel {
     var util: Utils!
     @Ignore
     var service2: Service
+    
+    @Named("MyService")
+    var myService: Service!
     
     init(service2: Service) {
         self.service2 = service2
@@ -49,12 +56,17 @@ class DIConfig {
         return RepositoryImpl()
     }
     
-    func getService() -> Service {
+    func getService() -> any Service {
         return ServiceImpl()
     }
     
     func getUtil() -> Utils {
         return Utils()
+    }
+    
+    @Named("MyService")
+    func getMyService() -> Service {
+        return MyService()
     }
 }
 
