@@ -33,9 +33,9 @@ extension AttachConfigMacro: MemberMacro {
                           let firstValue = $0.attributes.first,
                           let parameterValue = firstValue.arguments.first?.type {
                     
-                    return "container.register(customKey: \(parameterValue), protocol: \(returnType).self, impl: \($0.name)(), scope: .transient)"
+                    return "container.register(customKey: \(parameterValue), protocol: (\(returnType)).self, impl: \($0.name)(), scope: .transient)"
                 } else {
-                    return "container.register(customKey: \"\(returnType)Impl\", protocol: \(returnType).self, impl: \($0.name)(), scope: .transient)"
+                    return "container.register(customKey: \"\(SyntaxUtil.eraseExpr(from: returnType))Impl\", protocol: (\(returnType)).self, impl: \($0.name)(), scope: .transient)"
                 }
             }.joined(separator: "\n")
         

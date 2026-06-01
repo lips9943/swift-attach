@@ -84,7 +84,7 @@ struct SyntaxUtil {
         
         return MemberSyntax(
             name: name,
-            type: typeName,
+            type: eraseExpr(from: typeName),
             attributes: attributes,
             scope: scope,
             isOptional: type.is(OptionalTypeSyntax.self),
@@ -95,8 +95,6 @@ struct SyntaxUtil {
     static func findFunctionSyntax(funcDecl: FunctionDeclSyntax) -> FuncSyntax {
         let name = funcDecl.name.text
         let returnType = funcDecl.signature.returnClause?.type.trimmedDescription
-            .replacingOccurrences(of: "any", with: "")
-            .replacingOccurrences(of: " ", with: "")
         let params = funcDecl.signature.parameterClause.parameters.map { (name: $0.firstName.text, type: $0.type.trimmedDescription) }
         let isThrowing = funcDecl.signature.effectSpecifiers?.throwsClause != nil
         let isAsync = funcDecl.signature.effectSpecifiers?.asyncSpecifier != nil
@@ -139,5 +137,14 @@ struct SyntaxUtil {
         }
         
         return .init(isWeak: isWeak, isLazy: isLazy, isFinal: isFinal, isStatic: isStatic, scope: scope)
+    }
+    
+    static func eraseExpr(from text: String) -> String {
+        return text
+            .replacingOccurrences(
+            of: "any|[()\\s]",
+            with: "",
+            options: .regularExpression
+        )
     }
 }

@@ -35,15 +35,16 @@ class MyService: Service {
 @Service
 class ViewModel {
     @Singleton
-    var service: Service!
+    var service: (any Service)!
+    
     @NonImplement
-    @Singleton
     var util: Utils!
+    
     @Ignore
     var service2: Service
     
     @Named("MyService")
-    var myService: Service!
+    var myService: (any Service)!
     
     init(service2: Service) {
         self.service2 = service2
@@ -60,12 +61,13 @@ class DIConfig {
         return ServiceImpl()
     }
     
+    @NonImplement
     func getUtil() -> Utils {
         return Utils()
     }
     
     @Named("MyService")
-    func getMyService() -> Service {
+    func getMyService() -> any Service {
         return MyService()
     }
 }

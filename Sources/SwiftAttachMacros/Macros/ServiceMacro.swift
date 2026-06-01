@@ -28,7 +28,7 @@ extension ServiceMacro: MemberMacro {
         let parameters: [DeclSyntax] = members
             .compactMap { member in
                 guard !member.attributes.contains(where: {$0.name == "Ignore"}),
-                      member.type.contains("Service") || member.type.contains("Repository") else { return nil }
+                      member.type.contains("Service") || member.type.contains("Repository") || member.type.contains("Util") || member.type.contains("ViewModel") else { return nil }
                 let scope = member.attributes.contains(where: { $0.name == "Singleton" }) ? ".shared" : ".transient"
                 if member.attributes.contains(where: { $0.name == "NonImplement" }) {
                     return "private lazy var _\(raw: member.name): \(raw: member.type)? = Container().resolveOptional(\(raw: member.type).self, scope: \(raw: scope))"
