@@ -58,19 +58,24 @@ extension ServiceMacro: MemberAttributeMacro {
         // 변수 선언만 처리
         
         guard let variable = member.as(VariableDeclSyntax.self),
-              let type = variable.bindings.first?.typeAnnotation?.type.trimmedDescription,
-              type.contains("Service") || type.contains("Repository") else { return [] }
+              let type = variable.bindings.first?.typeAnnotation?.type.trimmedDescription else { return [] }
         
         for attribute in variable.attributes {
-            if let att = attribute.as(AttributeSyntax.self),
-               att.attributeName.trimmedDescription == "Ignore" {
-                return []
+            guard let att = attribute.as(AttributeSyntax.self),
+                  att.attributeName.trimmedDescription != "Ignore" else { return [] }
+            
+            if att.attributeName.trimmedDescription == "Named" ||
+               att.attributeName.trimmedDescription == "NonImplement" ||
+               att.attributeName.trimmedDescription == "Singleton" {
+                return [ AttributeSyntax("@PropertyInjection") ]
             }
         }
         
-        return [
-            AttributeSyntax("@PropertyInjection")
-        ]
+        if type.contains("Service") || type.contains("Repository") || type.contains("ViewModel") || type.contains("Util") {
+            return [ AttributeSyntax("@PropertyInjection") ]
+        }
+        
+        return []
     }
     
     
