@@ -22,6 +22,18 @@ extension ServiceMacro: MemberMacro {
         conformingTo protocols: [SwiftSyntax.TypeSyntax],
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [SwiftSyntax.DeclSyntax] {
+        guard let objects = SyntaxUtil.objectType(from: declaration) else { return [] }
+        
+        var variable: String
+        switch objects.type {
+        case .class:
+            variable = "lazy var"
+        case .struct, .actor:
+            variable = "let"
+        case .protocol, .enum:
+            CompileErrorHandler.e(declaration, context, message: "do not support the Object")
+            return []
+        }
         let members = SyntaxUtil.findMemberSyntaxsByBlock(from: declaration.memberBlock)
         
         // init 안에 들어갈 파라미터를 계산
@@ -31,13 +43,13 @@ extension ServiceMacro: MemberMacro {
                       member.type.contains("Service") || member.type.contains("Repository") || member.type.contains("Util") || member.type.contains("ViewModel") else { return nil }
                 let scope = member.attributes.contains(where: { $0.name == "Singleton" }) ? ".shared" : ".transient"
                 if member.attributes.contains(where: { $0.name == "NonImplement" }) {
-                    return "private lazy var _\(raw: member.name): \(raw: member.type)? = Container().resolveOptional(\(raw: member.type).self, scope: \(raw: scope))"
+                    return "private \(raw: variable) _\(raw: member.name): \(raw: member.type)? = Container().resolveOptional(\(raw: member.type).self, scope: \(raw: scope))"
                 } else if member.attributes.contains(where: { $0.name == "Named" }),
                           let firstValue = member.attributes.first,
                           let parameterValue = firstValue.arguments.first?.type {
-                    return "private lazy var _\(raw: member.name): \(raw: member.type)? = Container().resolve(impl: \(raw: parameterValue), protocol: \(raw: member.type).self, scope: \(raw: scope))"
+                    return "private \(raw: variable) _\(raw: member.name): \(raw: member.type)? = Container().resolve(impl: \(raw: parameterValue), protocol: \(raw: member.type).self, scope: \(raw: scope))"
                 } else {
-                    return "private lazy var _\(raw: member.name): \(raw: member.type)? = Container().resolve(impl: \"\(raw: member.type)Impl\", protocol: \(raw: member.type).self, scope: \(raw: scope))"
+                    return "private \(raw: variable) _\(raw: member.name): \(raw: member.type)? = Container().resolve(impl: \"\(raw: member.type)Impl\", protocol: \(raw: member.type).self, scope: \(raw: scope))"
                 }
             }
         

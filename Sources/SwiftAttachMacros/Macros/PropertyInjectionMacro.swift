@@ -26,9 +26,7 @@ extension PropertyInjectionMacro: AccessorMacro {
         guard let member = SyntaxUtil.findMemberSyntax(varDecl: varDecl) else { return [] }
         
         if !member.isOptional && !member.isImplicitlyUnwrappedOptional {
-            CompileErrorHandler.e(declaration, context) {
-                "\'?\' or \'!\' is required."
-            }
+            CompileErrorHandler.e(declaration, context, message: "\'?\' or \'!\' is required.")
         }
         
 //        guard !member.attributes.contains(where: {$0 == "Ignore"}) else { return [] }

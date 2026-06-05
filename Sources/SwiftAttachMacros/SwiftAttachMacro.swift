@@ -23,7 +23,7 @@ struct SwiftAttachPlugin: CompilerPlugin {
 
 
 struct CompileErrorHandler {
-    static func e(_ decl: some SyntaxProtocol, _ context: some MacroExpansionContext, message: () -> String) {
+    static func e(_ decl: some SyntaxProtocol, _ context: some MacroExpansionContext, message: @autoclosure () -> String) {
         context.diagnose(
             Diagnostic(node: decl, message: MacroExpansionErrorMessage(message()))
         )

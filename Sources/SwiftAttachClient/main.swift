@@ -33,7 +33,7 @@ class MyService: Service {
 }
 
 @Service
-class ViewModel {
+struct ViewModel {
     @Singleton
     var service: (any Service)!
     
