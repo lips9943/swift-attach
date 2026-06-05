@@ -12,7 +12,6 @@ struct ObjectSyntax {
     let scope: ScopeSyntax
 }
 
-
 enum ObjectType {
     case `class`
     case `struct`
