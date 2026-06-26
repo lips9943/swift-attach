@@ -140,6 +140,7 @@ struct SyntaxUtil {
     }
     
     static func eraseExpr(from text: String) -> String {
+        guard !text.contains("&") else { return text }
         return text
             .replacingOccurrences(
             of: "any|[()\\s]",
