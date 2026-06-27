@@ -88,7 +88,7 @@ extension ServiceMacro: MemberAttributeMacro {
             }
         }
         
-        if type.contains("Service") || type.contains("Repository") || type.contains("ViewModel") || type.contains("Util") {
+        if type.contains("Service") || type.contains("Repository") || type.contains("ViewModel") || type.contains("Util") || type.contains("Context") {
             return [ AttributeSyntax("@PropertyInjection") ]
         }
         
