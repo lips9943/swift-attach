@@ -13,6 +13,13 @@ protocol FirstService {}
 protocol SecondService {}
 class TwoProtocols: FirstService, SecondService {}
 
+// MARK: Random Name Test
+protocol HiThere {}
+class MyNameIsJun: HiThere {}
+
+// MARK: Context Name Test
+class ModelContext {}
+
 public protocol Repository {
     var text: String! { get }
 }
@@ -60,6 +67,13 @@ struct ViewModel {
     @Named("TwoProtocols")
     var twoProtocols: (FirstService & SecondService)!
     
+    @Named("NamedAttributeMustWork")
+    var hithere: HiThere!
+    
+    @NonImplement
+    @Singleton
+    var context: ModelContext?
+    
     @ObservedObject var observed: Observed
     
     init(service2: Service) {
@@ -88,9 +102,19 @@ class DIConfig {
         return MyService()
     }
     
+    @Named("NamedAttributeMustWork")
+    func getRandomNamed() -> HiThere {
+        return MyNameIsJun()
+    }
+    
     @Named("TwoProtocols")
     func getTwoProtocols() -> FirstService & SecondService {
         return TwoProtocols()
+    }
+    
+    @NonImplement
+    func getModelContext() -> ModelContext {
+        return ModelContext()
     }
 }
 

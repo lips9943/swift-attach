@@ -39,8 +39,13 @@ extension ServiceMacro: MemberMacro {
         // init 안에 들어갈 파라미터를 계산
         let parameters: [DeclSyntax] = members
             .compactMap { member in
-                guard !member.attributes.contains(where: {$0.name == "Ignore"}),
-                      member.type.contains("Service") || member.type.contains("Repository") || member.type.contains("Util") || member.type.contains("ViewModel") else { return nil }
+                guard !member.attributes.contains(where: {$0.name == "Ignore"}) else { return nil }
+                guard member.attributes.contains(where: { $0.name == "Named"}) ||
+                        (member.type.contains("Service") ||
+                         member.type.contains("Repository") ||
+                         member.type.contains("Util") ||
+                         member.type.contains("ViewModel") ||
+                         member.type.contains("Context")) else { return nil }
                 let scope = member.attributes.contains(where: { $0.name == "Singleton" }) ? ".shared" : ".transient"
                 if member.attributes.contains(where: { $0.name == "NonImplement" }) {
                     return "private \(raw: variable) _\(raw: member.name): \(raw: member.type)? = Container().resolveOptional(\(raw: member.type).self, scope: \(raw: scope))"
